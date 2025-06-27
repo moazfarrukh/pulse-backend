@@ -29,10 +29,6 @@ module.exports = {
         type: sequelize.TEXT,
         allowNull: false
       },
-      attachments: {
-        type: sequelize.STRING,
-        allowNull: true
-      },
       created_at: {
         allowNull: false,
         type: sequelize.DATE,
