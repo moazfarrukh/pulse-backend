@@ -14,6 +14,8 @@ export class SocketIOSetup {
 
     private messageHandler: MessageHandler;
 
+    private activeUsers: Map<number, Socket> = new Map();
+
     constructor(server: HttpServer) {
         this.io = new Server(server, {
             cors: {
@@ -31,13 +33,13 @@ export class SocketIOSetup {
 
     private setupMiddleware() {
         // Authentication middleware
-        this.io.use(async (socket: Socket, next): Promise<void>  => {
+        this.io.use(async (socket: Socket, next: (err?: Error) => void):Promise<void>  => {
             try {
                 const { userId } = socket.handshake.auth;
                 if (!userId) {
-                    return next( Error('Authentication required'));
+                    next( Error('Authentication required'));
                 }
-                // Store user ID in socket data
+
                 next();
             } catch  {
                 next(new Error('Authentication failed'));
@@ -48,9 +50,8 @@ export class SocketIOSetup {
 
     private setupEventHandlers() {
         this.io.on('connection', (socket: Socket) => {
-            this.messageHandler.handleConnection(socket);
-
-            // Handle chat room joining
+            this.messageHandler.handleConnection(socket,this.activeUsers);
+           // Handle chat room joining
             socket.on(SocketEvents.ON_JOIN_CHAT, (data:ChatJoinEvent) => {
                 this.messageHandler.handleChatJoin(socket, data);
             });
@@ -83,7 +84,7 @@ export class SocketIOSetup {
             });
 
             socket.on(SocketEvents.ON_DISCONNECT, () => {
-                this.messageEmitter.emitPresenceUpdate(socket.data.userId, 'offline');
+                this.messageHandler.handleDisconnection(socket,this.activeUsers);
             });
         });
     }

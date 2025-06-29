@@ -10,7 +10,9 @@ const SocketEvents = {
   ON_LEAVE_CHAT: 'chat:leave',
   ON_USER_JOINED: 'user:joined',
   ON_USER_LEFT: 'user:left',
-  
+  ON_CREATE_CHAT: 'chat:create',
+  ON_CHAT_CREATED: 'chat:created',
+
   // Message events
   ON_MESSAGE: 'message:new',
   ON_MESSAGE_SEND: 'message:send',

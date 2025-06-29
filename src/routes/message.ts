@@ -1,7 +1,7 @@
 import express from 'express';
-import { authMiddleware, validate, validateParams } from '../middlewares';
+import { authMiddleware, validate } from '../middlewares';
 import { getChatMessages,createMessage } from '../controllers';
-import { createMessageSchema,chatIdParamSchema } from '../schemas';
+import { createMessageSchema } from '../schemas';
 
 const router = express.Router();
 

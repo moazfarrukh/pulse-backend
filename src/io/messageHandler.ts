@@ -26,7 +26,6 @@ export default class MessageHandler {
             const { chat_id, content, attachments } = data;
 
             if (!chat_id) {
-                console.error(`Chat ID not provided in data for socket ${socket.id}`);
                 this.messageEmitter.emitError(socket.id, 'Chat ID is required');
                 return;
             }
@@ -42,7 +41,6 @@ export default class MessageHandler {
             // Check if user is member of the chat
             const isMember = await chatService.isUserChatMember(numericChatId, userId);
 
-            console.log(`User ${userId} is member of chat ${numericChatId}: ${isMember}`);
             if (!isMember) {
                 this.messageEmitter.emitError(socket.id, 'Access denied to this chat');
                 return;
@@ -50,13 +48,11 @@ export default class MessageHandler {
 
             // Validate message content
             if ((!content || content.trim().length === 0) && (!attachments || !Array.isArray(attachments) || attachments.length === 0)) {
-                console.error(`Message content or attachments are required for socket ${socket.id}`);
                 this.messageEmitter.emitError(socket.id, 'Message content or attachments are required');
                 return;
             }
 
             if (content && content.length > VALIDATION_CONSTANTS.MESSAGE_CONTENT_MAX_LENGTH) {
-                console.error(`Message content too long for socket ${socket.id}: ${content.length} characters`);
                 this.messageEmitter.emitError(socket.id, `Message content too long (max ${VALIDATION_CONSTANTS.MESSAGE_CONTENT_MAX_LENGTH} characters)`);
                 return;
             }
@@ -110,7 +106,6 @@ export default class MessageHandler {
             // Get the complete message with sender info
             const messageWithSender = await messageService.getMessageById(messageId);
             if (!messageWithSender) {
-                console.error(`Failed to retrieve message after creation for socket ${socket.id}`);
                 this.messageEmitter.emitError(socket.id, 'Failed to create message');
                 return;
             }
@@ -126,7 +121,7 @@ export default class MessageHandler {
             // Emit to all chat members
             this.messageEmitter.emitNewMessage(numericChatId, messageWithSender);
 
-        } catch (error) {
+        } catch {
             this.messageEmitter.emitError(socket.id, 'Server error while sending message');
         }
     }
@@ -183,7 +178,7 @@ export default class MessageHandler {
             // Emit to all chat members
             this.messageEmitter.emitMessageEdited(originalMessage.chat_id, updatedMessage);
 
-        } catch (error) {
+        } catch {
             this.messageEmitter.emitError(socket.id, 'Server error while editing message');
         }
     }
@@ -222,7 +217,7 @@ export default class MessageHandler {
 
             
 
-        } catch (error) {
+        } catch {
             
             this.messageEmitter.emitError(socket.id, 'Server error while deleting message');
         }
@@ -272,8 +267,8 @@ export default class MessageHandler {
                 }
             });
 
-        } catch (error) {
-            
+        } catch {
+
             this.messageEmitter.emitError(socket.id, 'Server error while handling typing');
         }
     }
@@ -311,8 +306,8 @@ export default class MessageHandler {
                 userId
             });
 
-        } catch (error) {
-            
+        } catch {
+
             this.messageEmitter.emitError(socket.id, 'Server error while handling typing');
         }
     }
@@ -341,7 +336,7 @@ export default class MessageHandler {
 
             // Emit to all chat members
             this.messageEmitter.emitUserLeft(chat_id, userId);
-        } catch (error) {
+        } catch {
             this.messageEmitter.emitError(socket.id, 'Server error while handling chat leave');
         }
     }
@@ -371,31 +366,41 @@ export default class MessageHandler {
 
             this.messageEmitter.emitUserJoined(chat_id, userId);
 
-        } catch (error) {
+        } catch {
             this.messageEmitter.emitError(socket.id, 'Server error while handling chat join');
         }
     }
     
-    async handleConnection(socket: Socket): Promise<void> {
+    async handleConnection(socket: Socket, activeUsers: Map<number, Socket>): Promise<void> {
         const { userId } = socket.handshake.auth;
         if (!userId) {
             this.messageEmitter.emitError(socket.id, 'Authentication required');
             return;
         }
+
         // Join the user to their chat rooms
         const userChats = await chatService.getUserChats(userId);
         userChats.forEach(chat => {
             socket.join(`chat:${chat.id}`);
         });
 
-        this.messageEmitter.emitPresenceUpdate(userId, 'online');
+        activeUsers.set(userId, socket);
+
+        // Emit presence update for all existing active users
+        activeUsers.forEach((_, activeUserId) => {
+            this.messageEmitter.emitPresenceUpdate(activeUserId, 'online');
+        });
+        
     }   
 
-    async handleDisconnection(socket: Socket): Promise<void> {
+    async handleDisconnection(socket: Socket, activeUsers: Map<number, Socket>): Promise<void> {
         const { userId } = socket.handshake.auth;
         if (!userId) {
             return;
         }
+
+        activeUsers.delete(userId);
+
         // Emit presence update
         this.messageEmitter.emitPresenceUpdate(userId, 'offline');
     }

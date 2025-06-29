@@ -92,41 +92,48 @@ export interface SocketMessage {
     };
 }
 
-export interface MessageSendEvent {
+export interface MessageSendEventPayload {
     chat_id: number;
     content: string;
     attachments?: File[];
     sender_id: number;
 }
 
-export interface MessageEditEvent {
+export interface MessageEditEventPayload {
     message_id: number;
     content: string;
     attachments?: File[];
 }
 
-export interface MessageDeleteEvent {
+export interface MessageDeleteEventPayload {
     message_id: number;
 }
 
-export interface TypingStartEvent {
+export interface TypingStartEventPayload {
     chat_id: number;
     user_id: number;
     user_info: { display_name: string; username: string };
 }
 
-export interface TypingStopEvent {
+export interface TypingStopEventPayload {
     chat_id: number;
     user_id: number;
 }
 
-export interface ChatJoinEvent {
+export interface ChatJoinEventPayload {
     chat_id: number;
     user_id: number;
 }
 
-export interface ChatLeaveEvent {
+export interface ChatLeaveEventPayload {
     chat_id: number;
     user_id: number;
 }
 
+
+
+export interface ChatCreateEventPayload {
+    name: string;
+    description?: string;
+    members: number[];
+}
