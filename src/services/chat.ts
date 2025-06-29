@@ -1,6 +1,6 @@
 import { QueryTypes } from 'sequelize';
 import sequelize from '../database/sequelize';
-import { Chat, ChatWithMembers, DirectChatRow } from '../types/chat';
+import { Chat, ChatWithMembers, ChatWithUser, DirectChatRow } from '../types/chat';
 import { User } from '../types';
 
 export const chatService = {
@@ -132,6 +132,7 @@ export const chatService = {
         const results = await sequelize.query(
             `SELECT 
                 c.*,
+                u.id as other_user_id,
                 u.display_name as other_display_name,
                 u.username as other_username,
                 u.avatar_url as other_avatar_url
@@ -153,7 +154,7 @@ export const chatService = {
             ...row,
             name: row.other_display_name || row.other_username,
             avatar: row.other_avatar_url
-        })) as Chat[];
+        })) as ChatWithUser[];
 },
 
     

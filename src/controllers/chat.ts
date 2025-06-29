@@ -3,6 +3,8 @@ import { chatService } from '../services/chat';
 import { userService } from '../services/user';
 import { CreateChatRequest, UpdateChatRequest, AddMembersRequest, RemoveMembersRequest } from '../types/chat';
 import { HTTP_CONSTANTS } from '../constants';
+import { socketIO } from '../app';
+import SocketEvents from '../constants/socketEvents';
 
 // Get all chats for current user
 const getUserChats = async (req: Request, res: Response) => {
@@ -148,12 +150,19 @@ const createChat = async (req: Request, res: Response) => {
             name: name?.trim(),
             created_by: userId
         });
-
+        
         // // Add members to the chat
         await chatService.addChatMembers(chatId, allMemberIds);
 
+        allMemberIds.forEach(memberId => {
+            socketIO.getIO().in(`user:${memberId}`).socketsJoin(`chat:${chatId}`);
+        });
+        
+        socketIO.getIO().emit(SocketEvents.ON_CREATE_CHAT);        
+
         // // Return the created chat with members
         const chatWithMembers = await chatService.getChatWithMembers(chatId);
+        
         res.status(HTTP_CONSTANTS.STATUS.CREATED).json(chatWithMembers);
     } catch {
 

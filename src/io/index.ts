@@ -4,7 +4,7 @@ import { config } from '../config';
 import MessageHandler from './messageHandler';
 import MessageEmitter from './messageEmitter';
 import SocketEvents from '../constants/socketEvents';
-import { MessageSendEvent, MessageEditEvent, MessageDeleteEvent, TypingStartEvent, TypingStopEvent, ChatJoinEvent, ChatLeaveEvent } from '../types/message';
+import { MessageSendEventPayload, MessageEditEventPayload, MessageDeleteEventPayload, TypingStartEventPayload, TypingStopEventPayload, ChatJoinEventPayload, ChatLeaveEventPayload } from '../types/message';
 
 
 export class SocketIOSetup {
@@ -52,34 +52,34 @@ export class SocketIOSetup {
         this.io.on('connection', (socket: Socket) => {
             this.messageHandler.handleConnection(socket,this.activeUsers);
            // Handle chat room joining
-            socket.on(SocketEvents.ON_JOIN_CHAT, (data:ChatJoinEvent) => {
+            socket.on(SocketEvents.ON_JOIN_CHAT, (data:ChatJoinEventPayload) => {
                 this.messageHandler.handleChatJoin(socket, data);
             });
 
             // Handle chat room leaving
-            socket.on(SocketEvents.ON_LEAVE_CHAT, (data:ChatLeaveEvent) => {
+            socket.on(SocketEvents.ON_LEAVE_CHAT, (data:ChatLeaveEventPayload) => {
                 this.messageHandler.handleChatLeave(socket, data);
             });
 
             // Handle message events
-            socket.on(SocketEvents.ON_MESSAGE_SEND, (data: MessageSendEvent) => {
+            socket.on(SocketEvents.ON_MESSAGE_SEND, (data: MessageSendEventPayload) => {
                 this.messageHandler.handleSendMessage(socket, data);
             });
 
-            socket.on(SocketEvents.ON_MESSAGE_EDIT, (data: MessageEditEvent) => {
+            socket.on(SocketEvents.ON_MESSAGE_EDIT, (data: MessageEditEventPayload) => {
                 this.messageHandler.handleEditMessage(socket, data);
             });
 
-            socket.on(SocketEvents.ON_MESSAGE_DELETE, (data: MessageDeleteEvent) => {
+            socket.on(SocketEvents.ON_MESSAGE_DELETE, (data: MessageDeleteEventPayload) => {
                 this.messageHandler.handleDeleteMessage(socket, data);
             });
 
             // Handle typing events
-            socket.on(SocketEvents.ON_TYPING_START, (data: TypingStartEvent) => {
+            socket.on(SocketEvents.ON_TYPING_START, (data: TypingStartEventPayload) => {
                 this.messageHandler.handleTypingStart(socket, data);
             });
 
-            socket.on(SocketEvents.ON_TYPING_STOP, (data: TypingStopEvent) => {
+            socket.on(SocketEvents.ON_TYPING_STOP, (data: TypingStopEventPayload) => {
                 this.messageHandler.handleTypingStop(socket, data);
             });
 

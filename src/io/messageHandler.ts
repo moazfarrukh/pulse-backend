@@ -6,7 +6,7 @@ import { messageService } from '../services/message';
 import { chatService } from '../services/chat';
 import { userService } from '../services/user';
 import MessageEmitter from './messageEmitter';
-import { MessageSendEvent, MessageEditEvent, MessageDeleteEvent, TypingStartEvent, TypingStopEvent, ChatLeaveEvent, ChatJoinEvent } from '../types/message';
+import { MessageSendEventPayload, MessageEditEventPayload, MessageDeleteEventPayload, TypingStartEventPayload, TypingStopEventPayload, ChatLeaveEventPayload, ChatJoinEventPayload } from '../types/message';
 import SocketEvents from '../constants/socketEvents';
 import { messageAttachmentService } from '../services/messageAttachment';
 import { UPLOAD_CONSTANTS, VALIDATION_CONSTANTS } from '../constants';
@@ -18,7 +18,7 @@ export default class MessageHandler {
         this.messageEmitter = messageEmitter;
     }
 
-    async handleSendMessage(socket: Socket, data: MessageSendEvent): Promise<void> {
+    async handleSendMessage(socket: Socket, data: MessageSendEventPayload): Promise<void> {
         try {                
             
             const { userId } = socket.handshake.auth;
@@ -126,7 +126,7 @@ export default class MessageHandler {
         }
     }
 
-    async handleEditMessage(socket: Socket, data: MessageEditEvent): Promise<void> {
+    async handleEditMessage(socket: Socket, data: MessageEditEventPayload): Promise<void> {
         try {
             const { userId } = socket.handshake.auth;
             if (!userId) {
@@ -183,7 +183,7 @@ export default class MessageHandler {
         }
     }
 
-    async handleDeleteMessage(socket: Socket, data: MessageDeleteEvent): Promise<void> {
+    async handleDeleteMessage(socket: Socket, data: MessageDeleteEventPayload): Promise<void> {
         try {
             const { userId } = socket.handshake.auth;
 
@@ -223,7 +223,7 @@ export default class MessageHandler {
         }
     }
 
-    async handleTypingStart(socket: Socket, data: TypingStartEvent): Promise<void> {
+    async handleTypingStart(socket: Socket, data: TypingStartEventPayload): Promise<void> {
         try {
             const { userId } = socket.handshake.auth;
 
@@ -273,7 +273,7 @@ export default class MessageHandler {
         }
     }
 
-    async handleTypingStop(socket: Socket, data: TypingStopEvent): Promise<void> {
+    async handleTypingStop(socket: Socket, data: TypingStopEventPayload): Promise<void> {
         try {
             const { userId } = socket.handshake.auth;
 
@@ -312,7 +312,7 @@ export default class MessageHandler {
         }
     }
 
-    async handleChatLeave(socket: Socket, data: ChatLeaveEvent): Promise<void> {
+    async handleChatLeave(socket: Socket, data: ChatLeaveEventPayload): Promise<void> {
         try {
             const { userId } = socket.handshake.auth;
 
@@ -341,7 +341,7 @@ export default class MessageHandler {
         }
     }
 
-    async handleChatJoin(socket: Socket, data: ChatJoinEvent): Promise<void> {
+    async handleChatJoin(socket: Socket, data: ChatJoinEventPayload): Promise<void> {
         try {
             const { userId } = socket.handshake.auth;
             const { chat_id } = data;
@@ -377,6 +377,8 @@ export default class MessageHandler {
             this.messageEmitter.emitError(socket.id, 'Authentication required');
             return;
         }
+        socket.join(`user:${userId}`);
+
 
         // Join the user to their chat rooms
         const userChats = await chatService.getUserChats(userId);

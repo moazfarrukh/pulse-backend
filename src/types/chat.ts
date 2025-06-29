@@ -42,7 +42,14 @@
     } 
 
 export interface DirectChatRow extends Chat {
+        other_user_id?: number;
         other_display_name?: string;
         other_username?: string;
         other_avatar_url?: string;
+    }
+
+        export interface ChatWithUser extends Chat {
+        other_user_id?: number;
+        other_user_name?: string;
+        other_user_avatar?: string;
     }
